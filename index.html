@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>URL Shortener</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f2f2f2;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      height: 100vh;
+      align-items: center;
+      justify-content: center;
+    }
+    .container {
+      background-color: #fff;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      width: 400px;
+      text-align: center;
+    }
+    input[type="text"] {
+      width: 90%;
+      padding: 10px;
+      font-size: 16px;
+      margin-bottom: 15px;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    #shortUrl {
+      margin-top: 20px;
+      font-weight: bold;
+    }
+    #error {
+      color: red;
+      margin-top: 15px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h2>URL Shortener</h2>
+  <input type="text" id="longUrl" placeholder="Enter long URL (https://...)">
+  <br>
+  <button onclick="shortenURL()">Shorten</button>
+
+  <div id="shortUrl"></div>
+  <div id="error"></div>
+</div>
+
+<script>
+  function shortenURL() {
+    const urlInput = document.getElementById('longUrl');
+    const longUrl = urlInput.value.trim();
+    const shortUrlDiv = document.getElementById('shortUrl');
+    const errorDiv = document.getElementById('error');
+
+    shortUrlDiv.innerHTML = '';
+    errorDiv.innerHTML = '';
+
+    if (!longUrl.startsWith('http://') && !longUrl.startsWith('https://')) {
+      errorDiv.innerText = 'URL must start with http:// or https://';
+      return;
+    }
+
+    fetch('http://127.0.0.1:8000/shorten', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ url: longUrl })
+    })
+    .then(response => {
+      if (!response.ok) {
+        return response.json().then(err => { throw err; });
+      }
+      return response.json();
+    })
+    .then(data => {
+      shortUrlDiv.innerHTML = `Shortened URL: <a href="${data.short_url}" target="_blank">${data.short_url}</a>`;
+      urlInput.value = '';
+    })
+    .catch(err => {
+      errorDiv.innerText = err.error || 'Something went wrong!';
+    });
+  }
+</script>
+
+</body>
+</html>
